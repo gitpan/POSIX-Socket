@@ -110,6 +110,59 @@ smh_recv(fd, sv_buffer, len, flags)
     RETVAL
 
 IV
+smh_recvn(fd, sv_buffer, len, flags)
+    IV fd;
+    SV * sv_buffer;
+    IV len;
+    IV flags;
+
+    PREINIT:
+    int nrecv;
+    int nleft = len;
+
+    PROTOTYPE: DISABLE
+
+    CODE:
+    if (!SvOK(sv_buffer)) {
+         sv_setpvn(sv_buffer, "", 0);
+    }
+    SvUPGRADE((SV*)ST(1), SVt_PV);
+    sv_buffer = (SV*)SvGROW((SV*)ST(1), len);
+    RETVAL = len;
+    while (nleft > 0)
+    {
+        nrecv = recv(fd, sv_buffer, nleft, flags);
+        if (nrecv == -1)
+        {
+            if ((errno == EAGAIN) || (errno == EWOULDBLOCK) || (errno == EINTR))
+            {
+                continue;
+            } else {
+                RETVAL = -1;
+                break;
+            }
+        }
+        else if (nrecv == 0)
+        {
+            RETVAL = 0;
+            break;
+        }
+        else
+        {
+            nleft -= nrecv;
+            sv_buffer += nrecv;
+        }
+ 
+    }
+    SvCUR_set((SV*)ST(1), len-nleft);
+    SvTAINT(ST(1));
+    SvSETMAGIC(ST(1));
+
+    OUTPUT:
+    RETVAL
+
+
+IV
 smh_getsockname(fd, sv_sock_addr)
     IV fd;
     SV * sv_sock_addr;
@@ -155,6 +208,45 @@ smh_send(fd, buf, flags)
     OUTPUT:
     RETVAL
 
+IV
+smh_sendn(fd, buf, flags)
+    IV fd;
+    SV * buf;
+    IV flags;
+    
+    PROTOTYPE: DISABLE
+
+    PREINIT:
+    int len;
+    char *msg = SvPVbyte(buf, len);
+    int nwritten;
+    int nleft = len;
+    
+    CODE:
+    RETVAL = len;
+    while (nleft > 0)
+    {
+        nwritten = send(fd, msg, nleft, flags);
+        if (nwritten == -1)
+        {
+            if ((errno == EAGAIN) || (errno == EWOULDBLOCK) || (errno == EINTR))
+            {
+                continue;
+            } else {
+                RETVAL = -1;
+                break;
+            }
+        }
+        else
+        {
+            nleft -= nwritten;
+            msg += nwritten;
+        }
+    }
+
+    OUTPUT:
+    RETVAL
+    
 
 IV
 smh_sendto(fd, buf, flags, dest_addr)
@@ -176,4 +268,26 @@ smh_sendto(fd, buf, flags, dest_addr)
     OUTPUT:
     RETVAL
 
+IV
+smh_accept(fd)
+    IV fd;
+
+    PROTOTYPE: DISABLE
+
+    CODE:
+    RETVAL = accept(fd, NULL, NULL);
+    OUTPUT:
+    RETVAL
+    
+IV
+smh_listen(fd, backlog)
+    IV fd;
+    IV backlog;
+
+    PROTOTYPE: DISABLE
+
+    CODE:
+    RETVAL = listen(fd, backlog);
+    OUTPUT:
+    RETVAL
 

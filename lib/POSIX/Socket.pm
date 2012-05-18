@@ -4,8 +4,8 @@ use 5.006;
 use strict;
 use Exporter 'import';
 our @ISA = qw(Exporter);
-our @EXPORT = qw(_socket _close _connect _fcntl _bind _recv _send _sendto _getsockname);
-our $VERSION = '0.02';
+our @EXPORT = qw(_socket _close _connect _fcntl _bind _recv _send _sendto _getsockname _sendn _recvn _accept _listen);
+our $VERSION = '0.03';
 
 require XSLoader;
 XSLoader::load('POSIX::Socket', $VERSION);
@@ -48,7 +48,19 @@ I hope you enjoyed it.
 
 =head2 EXPORT
 
-All of the above
+$fd = _socket($socket_family, $socket_type, $protocol);
+$rv = _close($fd)
+$rv = _fcntl($fildes, $cmd, $arg);
+$rv = _bind($fd, $addr);
+$rv = _connect($fd, $addr);
+$n = _recv($fd, $buffer, $len, $flags);
+$n = _recvn($fd, $buffer, $len, $flags);
+$rv = _getsockname($fd, $addr);
+$n = _send($fd, $buffer, $flags);
+$n = _sendn($fd, $buffer, $flags);
+$n = _sendto($fd, $buf, $flags, $dest_addr);
+$new_fd = _accept($fd);
+$rv = _listen($fd, $backlog);
 
 =head1 AUTHOR
 
