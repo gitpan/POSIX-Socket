@@ -56,7 +56,7 @@ smh_bind(fd, addr)
 
     PROTOTYPE: DISABLE
     PREINIT:
-    int addrlen;
+    STRLEN addrlen;
     char *sockaddr_pv = SvPVbyte(addr, addrlen);
 
     CODE:
@@ -71,7 +71,7 @@ smh_connect(fd, addr)
 
     PROTOTYPE: DISABLE
     PREINIT:
-    int addrlen;
+    STRLEN addrlen;
     char *sockaddr_pv = SvPVbyte(addr, addrlen);
 
     CODE:
@@ -119,6 +119,7 @@ smh_recvn(fd, sv_buffer, len, flags)
     PREINIT:
     int nrecv;
     int nleft = len;
+    void * ptr;
 
     PROTOTYPE: DISABLE
 
@@ -128,10 +129,11 @@ smh_recvn(fd, sv_buffer, len, flags)
     }
     SvUPGRADE((SV*)ST(1), SVt_PV);
     sv_buffer = (SV*)SvGROW((SV*)ST(1), len);
+    ptr = (void *) sv_buffer;
     RETVAL = len;
     while (nleft > 0)
     {
-        nrecv = recv(fd, sv_buffer, nleft, flags);
+        nrecv = recv(fd, ptr, nleft, flags);
         if (nrecv == -1)
         {
             if ((errno == EAGAIN) || (errno == EWOULDBLOCK) || (errno == EINTR))
@@ -150,7 +152,7 @@ smh_recvn(fd, sv_buffer, len, flags)
         else
         {
             nleft -= nrecv;
-            sv_buffer += nrecv;
+            ptr += nrecv;
         }
  
     }
@@ -199,7 +201,7 @@ smh_send(fd, buf, flags)
 
     PROTOTYPE: DISABLE
     PREINIT:
-    int len;
+    STRLEN len;
     char *msg = SvPVbyte(buf, len);
 
 
@@ -217,7 +219,7 @@ smh_sendn(fd, buf, flags)
     PROTOTYPE: DISABLE
 
     PREINIT:
-    int len;
+    STRLEN len;
     char *msg = SvPVbyte(buf, len);
     int nwritten;
     int nleft = len;
@@ -257,8 +259,8 @@ smh_sendto(fd, buf, flags, dest_addr)
 
     PROTOTYPE: DISABLE
     PREINIT:
-    int addrlen;
-    int len;
+    STRLEN addrlen;
+    STRLEN len;
     char *msg = SvPVbyte(buf,len);
     char *sockaddr_pv = SvPVbyte(dest_addr, addrlen);
 

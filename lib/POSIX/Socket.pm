@@ -5,7 +5,7 @@ use strict;
 use Exporter 'import';
 our @ISA = qw(Exporter);
 our @EXPORT = qw(_socket _close _connect _fcntl _bind _recv _send _sendto _getsockname _sendn _recvn _accept _listen);
-our $VERSION = '0.04';
+our $VERSION = '0.06';
 
 require XSLoader;
 XSLoader::load('POSIX::Socket', $VERSION);
@@ -73,7 +73,6 @@ I hope you enjoyed it.
  $new_fd = _accept($fd);
  
  $rv = _listen($fd, $backlog);
- 
 
 =head1 AUTHOR
 
