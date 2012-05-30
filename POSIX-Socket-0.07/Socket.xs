@@ -5,6 +5,11 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <errno.h>
+
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK EAGAIN
+#endif
 
 MODULE = POSIX::Socket    PACKAGE = POSIX::Socket   PREFIX = smh
 
@@ -97,7 +102,7 @@ smh_recv(fd, sv_buffer, len, flags)
     }
     SvUPGRADE((SV*)ST(1), SVt_PV);
     sv_buffer = (SV*)SvGROW((SV*)ST(1), len);
-    count = recv(fd, sv_buffer, len, flags);
+    count = recv(fd, (void*)sv_buffer, len, flags);
     if (count >= 0)
     {
         SvCUR_set((SV*)ST(1), count);
@@ -136,7 +141,7 @@ smh_recvn(fd, sv_buffer, len, flags)
         nrecv = recv(fd, ptr, nleft, flags);
         if (nrecv == -1)
         {
-            if ((errno == EAGAIN) || (errno == EWOULDBLOCK) || (errno == EINTR))
+            if ((errno == EAGAIN) || (errno == EINTR) || (errno == EWOULDBLOCK))
             {
                 continue;
             } else {
@@ -208,7 +213,6 @@ smh_send(fd, buf, flags)
     CODE:
     RETVAL = send(fd, msg, len, flags);
     OUTPUT:
-    RETVAL
 
 IV
 smh_sendn(fd, buf, flags)
@@ -231,7 +235,7 @@ smh_sendn(fd, buf, flags)
         nwritten = send(fd, msg, nleft, flags);
         if (nwritten == -1)
         {
-            if ((errno == EAGAIN) || (errno == EWOULDBLOCK) || (errno == EINTR))
+            if ((errno == EAGAIN) || (errno == EINTR) || (errno == EWOULDBLOCK))
             {
                 continue;
             } else {
