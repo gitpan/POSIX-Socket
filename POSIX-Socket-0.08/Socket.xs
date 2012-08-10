@@ -115,6 +115,50 @@ smh_recv(fd, sv_buffer, len, flags)
     RETVAL
 
 IV
+smh_recvfrom(fd, sv_buffer, len, flags, sv_sock_addr)
+    IV fd;
+    SV * sv_buffer;
+    IV len;
+    IV flags;
+	SV * sv_sock_addr;
+
+    PREINIT:
+    int count;
+	int fromSockSize = sizeof(struct sockaddr);
+
+    PROTOTYPE: DISABLE
+
+    CODE:
+    if (!SvOK(sv_buffer)) {
+         sv_setpvn(sv_buffer, "", 0);
+    }
+    SvUPGRADE((SV*)ST(1), SVt_PV);
+    sv_buffer = (SV*)SvGROW((SV*)ST(1), len);
+	
+	if (!SvOK(sv_sock_addr)) {
+         sv_setpvn(sv_sock_addr, "", 0);
+    }
+    SvUPGRADE((SV*)ST(4), SVt_PV);
+    sv_sock_addr = (SV*)SvGROW((SV*)ST(4), fromSockSize);
+
+    count = recvfrom( fd, (void*)sv_buffer, len, flags, (struct sockaddr*)sv_sock_addr, &fromSockSize );
+    if (count >= 0)
+    {
+        SvCUR_set((SV*)ST(1), count);
+        SvTAINT(ST(1));
+        SvSETMAGIC(ST(1));
+
+		SvCUR_set((SV*)ST(4), fromSockSize);
+        SvTAINT(ST(4));
+        SvSETMAGIC(ST(4));
+    }
+    RETVAL = count;
+
+    OUTPUT:
+	sv_sock_addr
+    RETVAL
+
+IV
 smh_recvn(fd, sv_buffer, len, flags)
     IV fd;
     SV * sv_buffer;

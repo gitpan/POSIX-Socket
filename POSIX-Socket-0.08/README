@@ -1,4 +1,4 @@
-POSIX/Socket version 0.07
+POSIX/Socket version 0.08
 ==========================
 
 Low-level socket operations: _socket _close _connect _fcntl _bind 
