@@ -243,6 +243,55 @@ smh_getsockname(fd, sv_sock_addr)
 
 
 IV
+smh_getsockopt(fd, level, optname, optval, optlen)
+    IV fd;
+    IV level;
+    IV optname;
+    SV * optval;
+    int optlen;
+
+    PREINIT:
+
+    PROTOTYPE: DISABLE
+
+    CODE:
+    if (!SvOK(optval)) {
+         sv_setpvn(optval, "", 0);
+    }
+    SvUPGRADE((SV*)ST(3), SVt_PV);
+    optval = (SV*)SvGROW((SV*)ST(3), optlen);
+    if (RETVAL = getsockopt(fd, level, optname, (void*)optval, (socklen_t*)&optlen) != -1)
+    {
+        SvCUR_set((SV*)ST(3), optlen);
+        SvTAINT(ST(3));
+        SvSETMAGIC(ST(3));
+    }
+
+    OUTPUT:
+    RETVAL
+
+
+IV
+smh_setsockopt(fd, level, optname, optval)
+    IV fd;
+    IV level;
+    IV optname;
+    SV * optval;
+
+    PREINIT:
+    STRLEN len;
+    char *msg = SvPVbyte(optval,len);
+
+    PROTOTYPE: DISABLE
+
+    CODE:
+    RETVAL = setsockopt(fd, level, optname, (void*)msg, len);
+
+    OUTPUT:
+    RETVAL
+
+
+IV
 smh_send(fd, buf, flags)
     IV fd;
     SV * buf;

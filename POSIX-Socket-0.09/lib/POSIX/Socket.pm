@@ -4,8 +4,9 @@ use 5.006;
 use strict;
 use Exporter 'import';
 our @ISA = qw(Exporter);
-our @EXPORT = qw(_socket _close _connect _fcntl _bind _recv _recvfrom _send _sendto _getsockname _sendn _recvn _accept _listen);
-our $VERSION = '0.08';
+our @EXPORT = qw(_socket _close _connect _fcntl _bind _recv _recvfrom _send _sendto _getsockname _sendn _recvn _accept _listen
+	_getsockopt _setsockopt);
+our $VERSION = '0.09';
 
 require XSLoader;
 XSLoader::load('POSIX::Socket', $VERSION);
@@ -75,6 +76,10 @@ I hope you enjoyed it.
  $new_fd = _accept($fd);
  
  $rv = _listen($fd, $backlog);
+ 
+ $rv = _getsockopt($fd, $level, $optname, $optval, $optlen);
+ 
+ $rv = _setsockopt($fd, $level, $optname, $optval);
 
 =head1 AUTHOR
 
